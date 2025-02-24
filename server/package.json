@@ -17,5 +17,11 @@
   "bugs": {
     "url": "https://github.com/Adihakanyan7/real-time-group-chat/issues"
   },
-  "homepage": "https://github.com/Adihakanyan7/real-time-group-chat#readme"
+  "homepage": "https://github.com/Adihakanyan7/real-time-group-chat#readme",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.10.1",
+    "socket.io": "^4.8.1"
+  }
 }
