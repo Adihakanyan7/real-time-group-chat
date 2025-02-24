@@ -22,8 +22,8 @@ mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
-        console.log('Connected to MongoDB');
-    })
+    console.log('Connected to MongoDB');
+})
     .catch((err) => {
         console.log('Failed to connect to MongoDB', err);
     });
@@ -36,12 +36,28 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model('Message', messageSchema);
 
+let typingUsers = new Set();
 
 io.on('connection', async (socket) => {
     console.log('User connected');
-    
+
     const messages = await Message.find().sort({ timestamp: 1 }).limit(50);
     socket.emit("load messages", messages);
+
+
+    socket.on('user typing', ({ username }) => {
+        if (username && !typingUsers.has(username)) {
+            typingUsers.add(username);
+            io.emit('typing update', Array.from(typingUsers));
+        }
+    });
+
+    socket.on('user stopped typing', ({ username }) => {
+        if (username && typingUsers.has(username)) {
+            typingUsers.delete(username);
+            io.emit('typing update', Array.from(typingUsers));
+        }
+    });
 
     socket.on('chat message', async ({ username, message }) => {
         if (!username || username.length > 20) {
@@ -52,9 +68,13 @@ io.on('connection', async (socket) => {
 
         const newMessage = new Message({ username, message });
         await newMessage.save();
-        
+
         io.emit('chat message', { username, message });
 
+        if (typingUsers.has(username)) {
+            typingUsers.delete(username);
+            io.emit('typing update', Array.from(typingUsers));
+        }
     });
 
     socket.on('disconnect', () => {
