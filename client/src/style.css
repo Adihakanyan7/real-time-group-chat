@@ -59,3 +59,34 @@ body {
   font-size: 14px;
   margin-top: 5px;
 }
+
+#typing-indicator {
+    position: fixed;
+    bottom: 4rem;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Hide indicator when no one is typing */
+#typing-indicator.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Tooltip for extra typers */
+#typing-indicator span {
+    cursor: pointer;
+    text-decoration: underline;
+}
