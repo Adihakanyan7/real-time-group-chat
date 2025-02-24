@@ -37,10 +37,21 @@ const messageSchema = new mongoose.Schema({
 const Message = mongoose.model('Message', messageSchema);
 
 let typingUsers = new Set();
+let onlineUsers = new Set();
+
 
 io.on('connection', async (socket) => {
     console.log('User connected');
 
+    socket.on('user joined', ({ username }) => {
+        if (username && !onlineUsers.has(username)) {
+            socket.username = username;
+            onlineUsers.add(socket.username);
+            io.emit('onlineUsers update', Array.from(onlineUsers));
+        }
+    });
+
+    
     const messages = await Message.find().sort({ timestamp: 1 }).limit(50);
     socket.emit("load messages", messages);
 
@@ -79,8 +90,13 @@ io.on('connection', async (socket) => {
 
     socket.on('disconnect', () => {
         console.log('User disconnected');
+        if (socket.username && onlineUsers.has(socket.username)) {
+            onlineUsers.delete(socket.username);
+            io.emit('onlineUsers update', Array.from(onlineUsers));
+        }
     });
 })
+
 server.listen(3000, () => {
     console.log('Server listening on port 3000');
 });

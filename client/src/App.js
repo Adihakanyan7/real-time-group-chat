@@ -14,6 +14,9 @@ function App() {
   const [error, setError] = useState("");
   const [typingUsers, setTypingUsers] = useState([]);
   const [typingTimeout, setTypingTimeout] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
 
   useEffect(() => {
     socket.on("load messages", (msgs) => {
@@ -28,14 +31,15 @@ function App() {
       setTypingUsers(users);
     });
 
-    socket.on("typing update", (users) => {
-      setTypingUsers([...users]);
+    socket.on("onlineUsers update", (users) => {
+      setOnlineUsers(users);
     });
 
     return () => {
       socket.off("chat message");
       socket.off("load messages");
       socket.off("typing update");
+      socket.off("onlineUsers update");
     };
   }, []);
 
@@ -47,6 +51,7 @@ function App() {
     } else {
       setUsername(tempUsername.trim());
       setError('');
+      socket.emit("user joined", { username: tempUsername.trim() });
     }
   };
 
@@ -56,7 +61,7 @@ function App() {
       if (typingTimeout) clearTimeout(typingTimeout);
       setTypingTimeout(setTimeout(() => {
         socket.emit("user stopped typing", { username });
-      }, 10000));
+      }, 2000));
     }
   };
 
@@ -87,11 +92,35 @@ function App() {
       ) : (
         <>
           <h2>Welcome, {username}!</h2>
+
+          <div className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
+            <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              {sidebarOpen ? "➖" : "➕"}
+            </button>
+            <h3>Users Online ({onlineUsers.length})</h3>
+            <ul>
+              {onlineUsers.map((user, index) => (
+                <li key={index}>{user === username ? "✅ You" : user}</li>
+              ))}
+            </ul>
+          </div>
+
           <ul id="messages">
             {messages.map((msg, index) => (
               <li key={index}><strong>{msg.username}:</strong> {msg.message}</li>
             ))}
           </ul>
+          
+          <div id="typing-indicator" className={typingUsers.length > 0 ? "" : "hidden"}>
+            {typingUsers.length > 0 && (
+              <>
+                {typingUsers.slice(0, 2).join(", ")}
+                {typingUsers.length > 2 && (
+                  <span title={typingUsers.slice(2).join(", ")}> and more...</span>
+                )} is typing...
+              </>
+            )}
+          </div>
           <form id="form" onSubmit={sendMessage}>
             <input
               id="input"
@@ -105,16 +134,6 @@ function App() {
             />
             <button type="submit">Send</button>
           </form>
-          <div id="typing-indicator" className={typingUsers.length > 0 ? "" : "hidden"}>
-            {typingUsers.length > 0 && (
-              <>
-                {typingUsers.slice(0, 2).join(", ")}
-                {typingUsers.length > 2 && (
-                  <span title={typingUsers.slice(2).join(", ")}> and more...</span>
-                )} is typing...
-              </>
-            )}
-          </div>
         </>
       )}
     </div>
