@@ -80,7 +80,10 @@ io.on('connection', async (socket) => {
         const newMessage = new Message({ username, message });
         await newMessage.save();
 
-        io.emit('chat message', { username, message });
+        io.emit('chat message', { 
+            username,
+             message, 
+            timestamp: newMessage.timestamp });
 
         if (typingUsers.has(username)) {
             typingUsers.delete(username);
