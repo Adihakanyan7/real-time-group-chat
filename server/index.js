@@ -1,9 +1,11 @@
-require('dotenv').config();
+
 const express = require('express');
 const http = require('http')
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
@@ -27,9 +29,9 @@ mongoose.connect(process.env.MONGO_URI, {
     });
 
 const messageSchema = new mongoose.Schema({
-    username: String,
-    message: String,
-    timestamp: {type: Date, default: Date.now}
+    username: { type: String, required: true, maxlength: 20 }, // ✅ Ensure max length
+    message: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now }
 });
 
 const Message = mongoose.model('Message', messageSchema);
@@ -42,9 +44,15 @@ io.on('connection', async (socket) => {
     socket.emit("load messages", messages);
 
     socket.on('chat message', async ({ username, message }) => {
+        if (!username || username.length > 20) {
+            return;
+        }
+
         console.log(`${username}: ${message}`);
+
         const newMessage = new Message({ username, message });
         await newMessage.save();
+        
         io.emit('chat message', { username, message });
 
     });
