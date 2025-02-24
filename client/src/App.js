@@ -74,6 +74,12 @@ function App() {
     }
   };
 
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+
   return (
     <div>
       {!username ? (
@@ -107,10 +113,13 @@ function App() {
 
           <ul id="messages">
             {messages.map((msg, index) => (
-              <li key={index}><strong>{msg.username}:</strong> {msg.message}</li>
+              <li key={index}>
+                <strong>{msg.username}:</strong> {msg.message}
+                <span className="timestamp"> ({formatTimestamp(msg.timestamp)})</span>
+                </li>
             ))}
           </ul>
-          
+
           <div id="typing-indicator" className={typingUsers.length > 0 ? "" : "hidden"}>
             {typingUsers.length > 0 && (
               <>
