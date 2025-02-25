@@ -104,6 +104,20 @@ io.on('connection', async (socket) => {
            
         }
     });
+
+    socket.on("clear chat", (secretCode) => {
+        if (secretCode === process.env.SECRET_CODE) {  // Check secret key
+            Message.deleteMany({})
+                .then(() => {
+                    console.log("✅ All messages deleted from the database.");
+                    io.emit("chat cleared"); // Notify all clients
+                })
+                .catch(err => console.error("❌ Error clearing chat:", err));
+        } else {
+            console.log("❌ Unauthorized attempt to clear chat.");
+        }
+    });
+    
 })
 
 server.listen(3000, () => {
