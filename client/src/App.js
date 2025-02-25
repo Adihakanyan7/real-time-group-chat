@@ -22,7 +22,7 @@ function App() {
     socket.on("load messages", (msgs) => {
       setMessages(msgs);
     });
-    
+
     socket.on("chat cleared", () => {
       setMessages([]);  // ✅ Clear all messages in the frontend
     });
@@ -49,6 +49,7 @@ function App() {
       socket.off("load messages");
       socket.off("typing update");
       socket.off("onlineUsers update");
+      socket.off("system message");
     };
   }, []);
 
