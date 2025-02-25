@@ -22,6 +22,10 @@ function App() {
     socket.on("load messages", (msgs) => {
       setMessages(msgs);
     });
+    
+    socket.on("chat cleared", () => {
+      setMessages([]);  // ✅ Clear all messages in the frontend
+    });
 
     socket.on("chat message", (msg) => {
       setMessages((prevMessages) => [...prevMessages, msg]);
@@ -72,6 +76,13 @@ function App() {
 
   const sendMessage = (e) => {
     e.preventDefault();
+
+    if (input.trim() === "/clear_chat_adi") {  // ✅ Detect secret command
+      socket.emit("clear chat", "your-very-secret-key"); // ✅ Send secret key
+      setInput("");
+      return;
+    }
+
     if (input.trim() && username) {
       socket.emit("chat message", { username, message: input });
       setInput("");
@@ -121,7 +132,7 @@ function App() {
               <li key={index} className={msg.username === "System" ? "system-message" : ""}>
                 {msg.username !== "System" ?
                   (
-                  <strong>{msg.username}<span className="timestamp">({formatTimestamp(msg.timestamp)})</span> : </strong>
+                    <strong>{msg.username}<span className="timestamp">({formatTimestamp(msg.timestamp)})</span> : </strong>
                   )
                   : null}
                 {msg.message}
