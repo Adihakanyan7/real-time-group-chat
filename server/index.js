@@ -41,15 +41,12 @@ let onlineUsers = new Set();
 
 
 io.on('connection', async (socket) => {
-    socket.on("user joined", (username) => {
-        console.log(`🟢 ${username.username} joined`);
-        io.emit("system message", { username: "System", message: `${username.username} has joined the chat!` });
-    });
-
     socket.on('user joined', ({ username }) => {
         if (username && !onlineUsers.has(username)) {
             socket.username = username;
             onlineUsers.add(socket.username);
+            console.log(`🟢 ${socket.username} joined`);
+            io.emit("system message", { username: "System", message: `${socket.username} has joined the chat!` });
             io.emit('onlineUsers update', Array.from(onlineUsers));
         }
     });
