@@ -145,3 +145,10 @@ body {
     color: gray;
     margin-left: 5px;
 }
+
+
+.system-message {
+    font-style: italic;
+    color: gray;
+    text-align: center;
+}
