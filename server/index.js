@@ -31,7 +31,7 @@ mongoose.connect(process.env.MONGO_URI, {
 const messageSchema = new mongoose.Schema({
     username: { type: String, required: true, maxlength: 20 }, // ✅ Ensure max length
     message: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now }
+    timestamp: { type: Date, default: Date.now },
 });
 
 const Message = mongoose.model('Message', messageSchema);
@@ -41,7 +41,10 @@ let onlineUsers = new Set();
 
 
 io.on('connection', async (socket) => {
-    console.log('User connected');
+    socket.on("user joined", (username) => {
+        console.log(`🟢 ${username} joined`);
+        io.emit("system message", { username: "System", message: `${username} has joined the chat!` });
+    });
 
     socket.on('user joined', ({ username }) => {
         if (username && !onlineUsers.has(username)) {
@@ -51,7 +54,7 @@ io.on('connection', async (socket) => {
         }
     });
 
-    
+
     const messages = await Message.find().sort({ timestamp: 1 }).limit(50);
     socket.emit("load messages", messages);
 
@@ -80,10 +83,11 @@ io.on('connection', async (socket) => {
         const newMessage = new Message({ username, message });
         await newMessage.save();
 
-        io.emit('chat message', { 
+        io.emit('chat message', {
             username,
-             message, 
-            timestamp: newMessage.timestamp });
+            message,
+            timestamp: newMessage.timestamp
+        });
 
         if (typingUsers.has(username)) {
             typingUsers.delete(username);
@@ -92,10 +96,11 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('User disconnected');
         if (socket.username && onlineUsers.has(socket.username)) {
+            console.log(`🔴 ${socket.username} left`);
             onlineUsers.delete(socket.username);
             io.emit('onlineUsers update', Array.from(onlineUsers));
+            io.emit("system message", { username: "System", message: `${socket.username} has left the chat!` });
         }
     });
 })
