@@ -42,8 +42,8 @@ let onlineUsers = new Set();
 
 io.on('connection', async (socket) => {
     socket.on("user joined", (username) => {
-        console.log(`🟢 ${username} joined`);
-        io.emit("system message", { username: "System", message: `${username} has joined the chat!` });
+        console.log(`🟢 ${username.username} joined`);
+        io.emit("system message", { username: "System", message: `${username.username} has joined the chat!` });
     });
 
     socket.on('user joined', ({ username }) => {
@@ -98,9 +98,10 @@ io.on('connection', async (socket) => {
     socket.on('disconnect', () => {
         if (socket.username && onlineUsers.has(socket.username)) {
             console.log(`🔴 ${socket.username} left`);
+            io.emit("system message", { username: "System", message: `${socket.username} has left the chat!` });
             onlineUsers.delete(socket.username);
             io.emit('onlineUsers update', Array.from(onlineUsers));
-            io.emit("system message", { username: "System", message: `${socket.username} has left the chat!` });
+           
         }
     });
 })

@@ -35,6 +35,11 @@ function App() {
       setOnlineUsers(users);
     });
 
+    socket.on("system message", (data) => {
+      setMessages((prev) => [...prev, { username: data.username, message: data.message, timestamp: Date.now() }]);
+    });
+
+
     return () => {
       socket.off("chat message");
       socket.off("load messages");
@@ -113,10 +118,14 @@ function App() {
 
           <ul id="messages">
             {messages.map((msg, index) => (
-              <li key={index}>
-                <strong>{msg.username}:</strong> {msg.message}
-                <span className="timestamp"> ({formatTimestamp(msg.timestamp)})</span>
-                </li>
+              <li key={index} className={msg.username === "System" ? "system-message" : ""}>
+                {msg.username !== "System" ?
+                  (
+                  <strong>{msg.username}<span className="timestamp">({formatTimestamp(msg.timestamp)})</span> : </strong>
+                  )
+                  : null}
+                {msg.message}
+              </li>
             ))}
           </ul>
 
