@@ -21,7 +21,10 @@ const io = new Server(server, {
     }
 });
 
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3001",  
+    credentials: true  
+}));
 
 app.use("/api/auth", authRoutes);
 
@@ -98,7 +101,7 @@ io.on('connection', async (socket) => {
             io.emit("system message", { username: "System", message: `${socket.username} has left the chat!` });
             onlineUsers.delete(socket.username);
             io.emit('onlineUsers update', Array.from(onlineUsers));
-           
+
         }
     });
 
@@ -114,7 +117,7 @@ io.on('connection', async (socket) => {
             console.log("❌ Unauthorized attempt to clear chat.");
         }
     });
-    
+
 })
 
 
