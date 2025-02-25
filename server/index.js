@@ -3,12 +3,16 @@ const express = require('express');
 const http = require('http')
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
-const MessageSchema = require("./models/Message");
+const Message = require("./models/Message");
 const cors = require('cors');
+const authRoutes = require("./routes/auth");
+
+
 
 require('dotenv').config();
 
 const app = express();
+app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -18,6 +22,10 @@ const io = new Server(server, {
 });
 
 app.use(cors());
+
+app.use("/api/auth", authRoutes);
+
+
 
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -29,12 +37,8 @@ mongoose.connect(process.env.MONGO_URI, {
         console.log('Failed to connect to MongoDB', err);
     });
 
-
-const Message = MessageSchema
-
 let typingUsers = new Set();
 let onlineUsers = new Set();
-
 
 io.on('connection', async (socket) => {
     socket.on('user joined', ({ username }) => {
@@ -112,6 +116,8 @@ io.on('connection', async (socket) => {
     });
     
 })
+
+
 
 server.listen(3000, () => {
     console.log('Server listening on port 3000');
