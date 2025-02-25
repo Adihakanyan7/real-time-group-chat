@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http')
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+const MessageSchema = require("./models/Message");
 const cors = require('cors');
 
 require('dotenv').config();
@@ -28,13 +29,8 @@ mongoose.connect(process.env.MONGO_URI, {
         console.log('Failed to connect to MongoDB', err);
     });
 
-const messageSchema = new mongoose.Schema({
-    username: { type: String, required: true, maxlength: 20 }, // ✅ Ensure max length
-    message: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
-});
 
-const Message = mongoose.model('Message', messageSchema);
+const Message = MessageSchema
 
 let typingUsers = new Set();
 let onlineUsers = new Set();
