@@ -4,10 +4,14 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import "./style.css";
 
+import Register from "./components/Register";
+
+
 const socket = io('http://localhost:3000');
 
 function App() {
-  const [username, setUsername] = useState("");
+  const [user, setUser] = useState(null);
+
   const [tempUsername, setTempUsername] = useState("");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -54,23 +58,20 @@ function App() {
   }, []);
 
   const handleSetUsername = () => {
-    if (tempUsername.trim().length === 0) {
-      setError('Nickname cannot be empty');
-    } else if (tempUsername.trim().length > 20) {
-      setError('Nickname cannot be longer than 20 characters');
+    if (!user || !user.username) {
+      setError("You must be logged in to join the chat.");
     } else {
-      setUsername(tempUsername.trim());
       setError('');
-      socket.emit("user joined", { username: tempUsername.trim() });
+      socket.emit("user joined", { username: user.username });
     }
   };
 
   const handleTyping = () => {
-    if (username) {
-      socket.emit("user typing", { username });
+    if (user && user.username) {
+      socket.emit("user typing", { username: user.username });
       if (typingTimeout) clearTimeout(typingTimeout);
       setTypingTimeout(setTimeout(() => {
-        socket.emit("user stopped typing", { username });
+        socket.emit("user stopped typing", { username: user.username });
       }, 2000));
     }
   };
@@ -84,10 +85,10 @@ function App() {
       return;
     }
 
-    if (input.trim() && username) {
-      socket.emit("chat message", { username, message: input });
+    if (input.trim() && user.username) {
+      socket.emit("chat message", { username: user.username, message: input });
       setInput("");
-      socket.emit("user stopped typing", { username });
+      socket.emit("user stopped typing", { username: user.username });
     }
   };
 
@@ -99,22 +100,11 @@ function App() {
 
   return (
     <div>
-      {!username ? (
-        <div className="username-container">
-          <h2>Enter Your Nickname</h2>
-          <input
-            type="text"
-            maxLength={20}
-            value={tempUsername}
-            onChange={(e) => setTempUsername(e.target.value)}
-            placeholder='Nickname (max 20 characters)'
-          />
-          <button onClick={handleSetUsername}>Join Chat</button>
-          {error && <p className="error">{error}</p>}
-        </div>
+      {!user  ? (
+        <Register onRegisterSuccess={setUser} />
       ) : (
         <>
-          <h2>Welcome, {username}!</h2>
+          <h2>Welcome, {user.username}!</h2>
 
           <div className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
             <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -123,7 +113,7 @@ function App() {
             <h3>Users Online ({onlineUsers.length})</h3>
             <ul>
               {onlineUsers.map((user, index) => (
-                <li key={index}>{user === username ? "✅ You" : user}</li>
+                <li key={index}>{user === user.username ? "✅ You" : user}</li>
               ))}
             </ul>
           </div>
