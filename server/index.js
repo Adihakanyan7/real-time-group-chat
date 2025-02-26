@@ -1,10 +1,12 @@
 
 const express = require('express');
 const http = require('http')
+const cookieParser = require("cookie-parser");
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
-const Message = require("./models/Message");
 const cors = require('cors');
+
+const Message = require("./models/Message");
 const authRoutes = require("./routes/auth");
 
 
@@ -13,6 +15,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
