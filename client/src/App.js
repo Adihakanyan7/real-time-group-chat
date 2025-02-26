@@ -5,12 +5,16 @@ import io from 'socket.io-client';
 import "./style.css";
 
 import Register from "./components/Register";
+import Login from "./components/Login";
 
 
 const socket = io('http://localhost:3000');
 
 function App() {
   const [user, setUser] = useState(null);
+  const [isRegistering, setIsRegistering] = useState(true);
+
+
 
   const [tempUsername, setTempUsername] = useState("");
   const [messages, setMessages] = useState([]);
@@ -100,8 +104,17 @@ function App() {
 
   return (
     <div>
-      {!user  ? (
-        <Register onRegisterSuccess={setUser} />
+      {!user ? (
+        <>
+          {isRegistering ? (
+            <Register onRegisterSuccess={setUser} />
+          ) : (
+            <Login onLogin={setUser} />
+          )}
+          <p onClick={() => setIsRegistering(!isRegistering)} style={{ cursor: "pointer", color: "blue" }}>
+            {isRegistering ? "Already have an account? Login" : "Need an account? Register"}
+          </p>
+        </>
       ) : (
         <>
           <h2>Welcome, {user.username}!</h2>
