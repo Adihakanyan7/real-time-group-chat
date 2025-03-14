@@ -4,9 +4,14 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import axios from "axios";
 
-import Register from "./components/Register";
-import Login from "./components/Login";
-import Navbar from "./components/Navbar";
+import Chat from "./components/chat/Chat";
+import Sidebar from "./components/chat/Sidebar";
+import AuthContainer from "./components/auth/AuthContainer";
+
+
+import Register from "./components/auth/Register";
+import Login from "./components/auth/Login";
+import Navbar from "./components/layout/Navbar";
 
 import "./style.css";
 import "./logout.css";
@@ -17,9 +22,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [isRegistering, setIsRegistering] = useState(false);
 
-
-
-  const [tempUsername, setTempUsername] = useState("");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
@@ -134,71 +136,12 @@ function App() {
       {user && <Navbar onLogout={handleLogout} />} {/* Show Navbar only if user is logged in */}
       <div className="main-content">
         {!user ? (
-          <>
-            {isRegistering ? (
-              <Register onRegisterSuccess={setUser} />
-            ) : (
-              <Login onLogin={setUser} />
-            )}
-            <p onClick={() => setIsRegistering(!isRegistering)} style={{ cursor: "pointer", color: "blue" }}>
-              {isRegistering ? "Already have an account? Login" : "Need an account? Register"}
-            </p>
-
-          </>
+          <AuthContainer onAuthSuccess={setUser} />
         ) : (
           <>
             <h2>Welcome, {user.username}!</h2>
-
-            <button className="logout-btn" onClick={handleLogout}>Logout</button>
-
-            <div className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
-              <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                {sidebarOpen ? "➖" : "➕"}
-              </button>
-              <h3>Users Online ({onlineUsers.length})</h3>
-              <ul>
-                {onlineUsers.map((user, index) => (
-                  <li key={index}>{user === user.username ? "✅ You" : user}</li>
-                ))}
-              </ul>
-            </div>
-
-            <ul id="messages">
-              {messages.map((msg, index) => (
-                <li key={index} className={msg.username === "System" ? "system-message" : ""}>
-                  {msg.username !== "System" ?
-                    (
-                      <strong>{msg.username}<span className="timestamp">({formatTimestamp(msg.timestamp)})</span> : </strong>
-                    )
-                    : null}
-                  {msg.message}
-                </li>
-              ))}
-            </ul>
-
-            <div id="typing-indicator" className={typingUsers.length > 0 ? "" : "hidden"}>
-              {typingUsers.length > 0 && (
-                <>
-                  {typingUsers.slice(0, 2).join(", ")}
-                  {typingUsers.length > 2 && (
-                    <span title={typingUsers.slice(2).join(", ")}> and more...</span>
-                  )} is typing...
-                </>
-              )}
-            </div>
-            <form id="form" onSubmit={sendMessage}>
-              <input
-                id="input"
-                type="text"
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value)
-                  handleTyping()
-                }}
-                placeholder="Type a message..."
-              />
-              <button type="submit">Send</button>
-            </form>
+            <Sidebar onlineUsers={onlineUsers} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+            <Chat user={user} messages={messages} input={input} setInput={setInput} sendMessage={sendMessage} typingUsers={typingUsers} handleTyping={handleTyping} formatTimestamp={formatTimestamp} />
           </>
         )}
       </div>
