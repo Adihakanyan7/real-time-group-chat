@@ -1,4 +1,4 @@
-const { signUp } = require("../auth/auth");
+const { signUp } =require('../controllers/auth');
 
 signUp("testuser@example.com", "TestPassword123!")
     .then(data => console.log("✅ User signed up successfully:", data))

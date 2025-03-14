@@ -1,4 +1,4 @@
-const { verifyUserEmail } = require("../auth/auth");
+const { verifyUserEmail } = require('../controllers/auth');
 
 verifyUserEmail("testuser@example.com")
     .then(() => console.log("✅ User email verified successfully"))
