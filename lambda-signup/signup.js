@@ -1,7 +1,4 @@
 import { registerUser } from "./cognitoService.js";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 export const handler = async (event) => {
     try {

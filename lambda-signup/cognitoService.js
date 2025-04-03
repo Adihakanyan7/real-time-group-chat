@@ -2,9 +2,6 @@ import { CognitoIdentityProviderClient, SignUpCommand } from "@aws-sdk/client-co
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { docClient } from "./db.js";
 import User from "./User.js";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const USERS_TABLE = "UsersTable";
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
