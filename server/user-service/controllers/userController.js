@@ -1,49 +1,48 @@
-const { createUser, getUserById, updateUser, deleteUser } = require("../services/userService");
+const { getUserById, updateUser, deleteUser } = require("../services/userService");
 
-// Create User Controller
-async function createUserController(req, res) {
+
+
+async function fetchUserController(req, res) {
     try {
-        const { email, username } = req.body;
-        if (!email || !username) {
-            return res.status(400).json({ error: "Email and username are required" });
+        const userId = req.user.sub; // Cognito User ID
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" });
         }
 
-        const user = await createUser(email, username);
-        res.status(201).json(user);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
-
-// Get User by ID Controller
-async function getUserController(req, res) {
-    try {
-        const user = await getUserById(req.params.id);
+        const user = await getUserById(userId); // Fetch from DynamoDB
         if (!user) return res.status(404).json({ error: "User not found" });
+
         res.json(user);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
 
-// Update User Controller
+
 async function updateUserController(req, res) {
     try {
-        const updatedUser = await updateUser(req.params.id, req.body);
+        const userId = req.user.sub; // ✅ Get user ID from token
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+        const updatedUser = await updateUser(userId, req.body); // ✅ Update in DB
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
 
-// Delete User Controller
 async function deleteUserController(req, res) {
     try {
-        await deleteUser(req.params.id);
+        const userId = req.user.sub; // ✅ Get user ID from token
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+        await deleteUser(userId);
         res.json({ message: "User deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
 
-module.exports = { createUserController, getUserController, updateUserController, deleteUserController };
+module.exports = { fetchUserController, updateUserController, deleteUserController };
